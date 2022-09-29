@@ -1,6 +1,7 @@
 const { response } = require('express');
 const Usuario = require('../models/usuario');
 const bcryptjs = require("bcryptjs");
+const { validationResult } = require('express-validator');
 
 // localhost:8081/api/usuarios?q=hola&nombre=juan&pkey=123
 const userGet = (req, res) => {
@@ -12,12 +13,18 @@ const userGet = (req, res) => {
 }
 
 const userPost =  async (req, res) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+        return res.status(400).json(errors);
+    }
+
     const {nombre, correo, contraseña, rol} = req.body
     const body = req.body;
     const usuario = new Usuario({nombre, correo, contraseña, rol});
+
     //verificar si el correo existe
     const correoExiste = await Usuario.findOne({correo})
-
     if (correoExiste){
         return res.status(400).json({
             "msj": "Este email ya existe"
