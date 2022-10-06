@@ -4,17 +4,27 @@ const bcryptjs = require("bcryptjs");
 const { validationResult } = require('express-validator');
 
 // localhost:8081/api/usuarios?q=hola&nombre=juan&pkey=123
-const userGet = (req, res) => {
-    const query = req.query;
+const userGet = async (req, res) => {
+    const {limite=3, rango} = req.query;
+    const resp = await Promise.all([
+        Usuario.find({estado:true}).limit(Number(limite)).skip(Number(rango)),
+        Usuario.countDocuments()
+    ]);
+
+    const usuarios = resp[0] ;
+    const total = resp[1];
+
     res.json({
         'key': 'Hellow Wolrd',
-        query
+        usuarios,
+        total
     });
 }
 
 const userPost =  async (req, res) => {
 
     const errors = validationResult(req);
+
     if (!errors.isEmpty()){
         return res.status(400).json(errors);
     }
@@ -52,6 +62,7 @@ const userPut = (req, res) => {
 }
 
 const userDelete = (req, res) => {
+    
     res.json({
         'key': 'Hellow Wolrd'
     });
